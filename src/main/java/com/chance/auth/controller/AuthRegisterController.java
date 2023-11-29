@@ -8,6 +8,7 @@ import com.chance.auth.domain.res.SendOtpResponse;
 import com.chance.auth.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -27,7 +28,7 @@ public class AuthRegisterController {
      * @return
      */
     @PostMapping("send-otp")
-    public Mono<SendOtpResponse> sendSms(SendOtpRequest sendOtpRequest) {
+    public Mono<SendOtpResponse> sendSms(@RequestBody SendOtpRequest sendOtpRequest) {
         return otpService.sendSms(sendOtpRequest.msisdn());
     }
 
@@ -38,7 +39,7 @@ public class AuthRegisterController {
      * @return
      */
     @PostMapping("verify-otp")
-    public Mono<JwtTokenResponse> verify(OtpVerifyRequest otpVerifyRequest) {
+    public Mono<JwtTokenResponse> verify(@RequestBody OtpVerifyRequest otpVerifyRequest) {
         return userService.checkVerificationCodeAndRegister(otpVerifyRequest);
     }
 }

@@ -12,7 +12,7 @@ server:
 springbootwebfluxjjwt:
   jjwt:
     secret: XwO5hbRdHYDY63LfdzxdbaXLXiA8/flrcz2ni15Qq2sHGgbxc/Vi+2ULCEaXUDL3kzCyAWWKl1mArKOBfRR1vcBFfSlZ7nNpeyb1FaJapkBCh1lHImlTcpK03kCahRAFfBw25TD2jbbUoxNEtI/xppvjMe/GNw23tJy17wZFuH4=
-    expiration: 172800
+    expiration: 30
   password:
     encoder:
       secret: CHANGE_ME_ENCODER_ABCDEFGHIJKLMNOP

@@ -26,9 +26,43 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     public Mono<SendOtpResponse> sendSms(String msisdn) {
+        Mono<Boolean> booleanMono = checkDoesExistOTP(msisdn);
+        return booleanMono
+                .filter(Boolean.FALSE::equals)
+                .flatMap(r -> sendOtpToUser(msisdn))
+                .switchIfEmpty(
+                        Mono.error(new OtpSendException("Son 1 dakika içerisinde gönderilmiş bir password mevcut!")));
+    }
+
+    private Mono<Boolean> checkDoesExistOTP(String msisdn) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime minusOne = now.minusMinutes(1);
+        return otpRepository
+                .existsByMsisdnAndCreatedAtBetween(msisdn, minusOne, now)
+                .cache();
+    }
+
+    private Mono<Otp> checkDoesExistOTPWithMsisdnAndVerificationCode(String msisdn, String verificationCode) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime minusOne = now.minusMinutes(1);
+        return otpRepository
+                .findOtpByMsisdnAndVerificationCodeAndCreatedAtBetween(msisdn, verificationCode, minusOne, now)
+                .cache();
+    }
+
+    @Override
+    public Mono<Boolean> checkVerificationCode(OtpVerifyRequest otpVerifyRequest) {
+        return checkDoesExistOTPWithMsisdnAndVerificationCode(
+                        otpVerifyRequest.msisdn(), otpVerifyRequest.verificationCode())
+                .map(r -> Boolean.TRUE)
+                .switchIfEmpty(Mono.error(new OtpPasswordException(OTP_COULD_NOT_FOUND)));
+    }
+
+    private Mono<SendOtpResponse> sendOtpToUser(String msisdn) {
         Mono<Otp> savedOtp = otpRepository.save(Otp.builder()
                 .msisdn(msisdn)
                 .verificationCode(this.generateCode())
+                .createdAt(LocalDateTime.now())
                 .build());
         return savedOtp.map(res ->
                         SendOtpResponse.builder().message(OTP_SENT_SUCCESSFULLY).build())
@@ -40,18 +74,5 @@ public class OtpServiceImpl implements OtpService {
         int randomNumber = random.nextInt(900000) + 100000;
         return String.valueOf(randomNumber);*/
         return "111111";
-    }
-
-    @Override
-    public Mono<Boolean> checkVerificationCode(OtpVerifyRequest otpVerifyRequest) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime minusOneMinute = now.minusMinutes(1);
-        return otpRepository
-                .findOtpBymsisdnAndVerificationCode(otpVerifyRequest.msisdn(), otpVerifyRequest.verificationCode())
-                .switchIfEmpty(Mono.error(new OtpPasswordException(OTP_COULD_NOT_FOUND)))
-                .map(Otp::getCreatedAt)
-                .map(createdAt -> createdAt.isBefore(minusOneMinute))
-                .filter(Boolean.TRUE::equals)
-                .switchIfEmpty(Mono.error(new OtpPasswordException(OTP_OUT_OF_TIME_ERROR)));
     }
 }

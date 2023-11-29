@@ -22,14 +22,14 @@ public class JwtTokenProvider {
     private String secretKey;
 
     @Value("${springbootwebfluxjjwt.jjwt.expiration}")
-    private long validityInMilliseconds;
+    private long minutes;
 
     public Mono<String> createToken(String username, List<String> roles) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("roles", roles);
 
         Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMilliseconds);
+        Date validity = new Date(now.getTime() + (1000 * 60 * minutes));
 
         return Mono.just(Jwts.builder()
                 .setClaims(claims)
@@ -56,12 +56,12 @@ public class JwtTokenProvider {
         }
     }
 
-    public Mono<String> getUsername(String token) {
-        return Mono.just(Jwts.parser()
+    public String getUsername(String token) {
+        return Jwts.parser()
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject());
+                .getSubject();
     }
 
     public Mono<List<GrantedAuthority>> getRoles(String token) {
@@ -73,5 +73,9 @@ public class JwtTokenProvider {
                 .map(roles -> (List<String>) roles)
                 .map(roleList ->
                         roleList.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+    }
+
+    public Claims getAllClaimsFromToken(String authToken) {
+        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(authToken).getBody();
     }
 }
