@@ -12,7 +12,8 @@ import reactor.core.publisher.Mono;
 public class HomeController {
 
     @GetMapping
-    public Mono<String> hello(Mono<Authentication> authenticationMono) {
-        return authenticationMono.map(authentication -> authentication.getPrincipal().toString());
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public Mono<String> hello() {
+        return Mono.just("hello!");
     }
 }

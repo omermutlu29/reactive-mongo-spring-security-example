@@ -6,10 +6,12 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Component
 public class JwtAuthenticationFilter implements WebFilter {
@@ -22,34 +24,13 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        return jwtTokenProvider
-                .resolveToken(exchange.getRequest())
-                .flatMap(token -> processWithToken(exchange, chain, token))
-                .switchIfEmpty(chain.filter(exchange));
-    }
-
-    private Mono<Void> processWithToken(ServerWebExchange exchange, WebFilterChain chain, String token) {
-        return jwtTokenProvider
-                .validateToken(token)
-                .flatMap(valid -> processIsValidTokenAccordingToResult(exchange, chain, token, valid));
-    }
-
-    private Mono<Void> processIsValidTokenAccordingToResult(
-            ServerWebExchange exchange, WebFilterChain chain, String token, Boolean valid) {
-        if (Boolean.TRUE.equals(valid)) {
-            String username = jwtTokenProvider.getUsername(token);
-            return addSecurityContext(exchange, token, username).flatMap(securityContext ->
-                    chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext))));
-        } else {
-            return chain.filter(exchange);
+        String token = jwtTokenProvider.resolveToken(exchange.getRequest()).block();
+        if (StringUtils.hasText(token) && Boolean.TRUE.equals(this.jwtTokenProvider.validateToken(token).block())) {
+            return Mono.fromCallable(() -> this.jwtTokenProvider.getAuthentication(token))
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .flatMap(authentication -> chain.filter(exchange)
+                            .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)));
         }
-    }
-
-    private Mono<SecurityContextImpl> addSecurityContext(ServerWebExchange exchange, String token, String username) {
-        return jwtTokenProvider
-                .getRoles(token)
-                .map(roles -> new UsernamePasswordAuthenticationToken(username, token, roles))
-                .map(authenticationToken -> new SecurityContextImpl(authenticationToken))
-                .doOnNext(securityContext -> exchange.getAttributes().put(SecurityContext.class.getName(), securityContext));
+        return chain.filter(exchange);
     }
 }
