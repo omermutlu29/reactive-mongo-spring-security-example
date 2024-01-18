@@ -81,10 +81,6 @@ public class JwtTokenProvider {
                         roleList.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
     }
 
-    public Claims getAllClaimsFromToken(String authToken) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(authToken).getBody();
-    }
-
     public Authentication getAuthentication(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(this.secretKey).build()
                 .parseClaimsJws(token).getBody();
