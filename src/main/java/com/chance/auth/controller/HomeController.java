@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 public class HomeController {
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public Mono<String> hello() {
         return Mono.just("hello!");
     }

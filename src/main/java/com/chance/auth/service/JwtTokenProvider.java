@@ -88,13 +88,8 @@ public class JwtTokenProvider {
     public Authentication getAuthentication(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(this.secretKey).build()
                 .parseClaimsJws(token).getBody();
-
         List<GrantedAuthority> roles = getRoles(token).block();
-
-
-
         User principal = new User(claims.getSubject(), "", roles);
-
         return new UsernamePasswordAuthenticationToken(principal, token, roles);
     }
 }
