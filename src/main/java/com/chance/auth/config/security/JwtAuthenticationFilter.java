@@ -24,7 +24,7 @@ public class JwtAuthenticationFilter implements WebFilter {
         String token = jwtTokenProvider.resolveToken(exchange.getRequest()).block();
         if (StringUtils.hasText(token)
                 && Boolean.TRUE.equals(
-                this.jwtTokenProvider.validateToken(token).block())) {
+                        this.jwtTokenProvider.validateToken(token).block())) {
             return Mono.fromCallable(() -> this.jwtTokenProvider.getAuthentication(token))
                     .subscribeOn(Schedulers.boundedElastic())
                     .flatMap(authentication -> chain.filter(exchange)
