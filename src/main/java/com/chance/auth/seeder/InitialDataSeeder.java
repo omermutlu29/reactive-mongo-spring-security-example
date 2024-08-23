@@ -22,11 +22,11 @@ public class InitialDataSeeder implements ApplicationListener<ApplicationStarted
 
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {
-        /*userRepository
-        .findByUsername("admin")
-        .doOnNext(i -> System.out.println("User already created with following id : " + i.getId()))
-        .switchIfEmpty(createAdminUser())
-        .subscribe();*/
+        userRepository
+                .findByUsername("admin")
+                .doOnNext(i -> System.out.println("User already created with following id : " + i.getId()))
+                .switchIfEmpty(createAdminUser())
+                .subscribe();
     }
 
     private Mono<User> createAdminUser() {

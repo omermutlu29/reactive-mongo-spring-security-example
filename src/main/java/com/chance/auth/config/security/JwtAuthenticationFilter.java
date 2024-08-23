@@ -1,10 +1,7 @@
 package com.chance.auth.config.security;
 
 import com.chance.auth.service.JwtTokenProvider;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
@@ -25,12 +22,15 @@ public class JwtAuthenticationFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String token = jwtTokenProvider.resolveToken(exchange.getRequest()).block();
-        if (StringUtils.hasText(token) && Boolean.TRUE.equals(this.jwtTokenProvider.validateToken(token).block())) {
+        if (StringUtils.hasText(token)
+                && Boolean.TRUE.equals(
+                        this.jwtTokenProvider.validateToken(token).block())) {
             return Mono.fromCallable(() -> this.jwtTokenProvider.getAuthentication(token))
                     .subscribeOn(Schedulers.boundedElastic())
                     .flatMap(authentication -> chain.filter(exchange)
                             .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)));
         }
+
         return chain.filter(exchange);
     }
 }
