@@ -10,6 +10,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(OtpSendException.class)
     public ResponseEntity<String> handleOtpSendException(OtpSendException ex) {
-      return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }
