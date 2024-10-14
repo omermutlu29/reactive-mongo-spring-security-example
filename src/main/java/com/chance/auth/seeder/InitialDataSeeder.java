@@ -33,14 +33,13 @@ public class InitialDataSeeder implements ApplicationListener<ApplicationStarted
         User userDetails = User.builder()
                 .id(UUID.randomUUID().toString())
                 .username("admin")
-                .msisdn("5332101756")
+                .msisdn("5xxxxxxxxx")
                 .isAccountNonLocked(true)
                 .isCredentialsNonExpired(true)
                 .isAccountNonExpired(true)
                 .isEnabled(true)
                 .createdAt(LocalDateTime.now())
-                .email("omermutlu29@gmail.com")
-                // .password(passwordEncoder.encode("admin"))
+                .email("aliveli@xyz.com")
                 .roles(List.of(EnumRole.ROLE_USER, EnumRole.ROLE_ADMIN))
                 .build();
         return userRepository.save(userDetails).doOnNext(user -> log.info("Admin user created successfully"));

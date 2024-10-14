@@ -70,9 +70,6 @@ public class OtpServiceImpl implements OtpService {
     }
 
     private String generateCode() {
-        /*Random random = new Random();
-        int randomNumber = random.nextInt(900000) + 100000;
-        return String.valueOf(randomNumber);*/
         return "111111";
     }
 }

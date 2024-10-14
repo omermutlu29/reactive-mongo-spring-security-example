@@ -8,7 +8,4 @@ public class JwtAuthenticationException extends AuthenticationException {
         super(msg, cause);
     }
 
-    public JwtAuthenticationException(String msg) {
-        super(msg);
-    }
 }

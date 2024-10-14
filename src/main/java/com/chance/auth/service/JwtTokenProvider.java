@@ -21,10 +21,10 @@ import reactor.core.publisher.Mono;
 @Service
 public class JwtTokenProvider {
 
-    @Value("${springbootwebfluxjjwt.jjwt.secret}")
+    @Value("${springbootwebfluxjjwt.jjwt.secret:secret}")
     private String secretKey;
 
-    @Value("${springbootwebfluxjjwt.jjwt.expiration}")
+    @Value("${springbootwebfluxjjwt.jjwt.expiration:10}")
     private long minutes;
 
     public Mono<String> createToken(String username, List<String> roles) {
